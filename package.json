@@ -1,0 +1,28 @@
+{
+  "name": "node-sample",
+  "version": "1.0.0",
+  "description": "Sample Node.js app",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/spugachev/node-sample.git"
+  },
+  "author": "Sergey Pugachev",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/spugachev/node-sample/issues"
+  },
+  "homepage": "https://github.com/spugachev/node-sample#readme",
+  "devDependencies": {
+    "browser-sync": "^2.13.0",
+    "del": "^2.2.1",
+    "gulp": "^3.9.1",
+    "gulp-load-plugins": "^1.2.4",
+    "gulp-nodemon": "^2.1.0",
+    "gulp-task-listing": "^1.0.1",
+    "yargs": "^4.7.1"
+  }
+}
