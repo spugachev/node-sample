@@ -9,8 +9,9 @@ const runSequence = require('run-sequence');
 const del = require('del');
 const path = require('path');
 const _ = require('lodash');
-const ts = $.typescript;
 const port = process.env.PORT || config.defaultPort;
+const tsprjServer = $.typescript.createProject(config.tsconfig);
+const tsprjClient = $.typescript.createProject(config.tsconfig);
 
 /**
  * List the available gulp tasks
@@ -18,15 +19,15 @@ const port = process.env.PORT || config.defaultPort;
 gulp.task('help', $.taskListing);
 gulp.task('default', ['node-dev']);
 
+gulp.task('build',  (cb) => {
+    runSequence('clean', 
+        ['files-copy', 'scripts-server', 'scripts-client'], cb);
+});
+
 gulp.task('clean', () => {
     let delConfig = [].concat(config.dist, config.temp);
     log('Cleaning: ' + $.util.colors.blue(delConfig));
     return del(delConfig);
-});
-
-gulp.task('build',  (cb) => {
-    runSequence('clean', 
-        ['files-copy', 'scripts-server', 'scripts-client'], cb);
 });
 
 gulp.task('files-copy', () => {
@@ -38,24 +39,20 @@ gulp.task('files-copy', () => {
 });
 
 gulp.task('scripts-server',  () => {
-    const tsprj = ts.createProject(config.tsconfig);
-    
     return gulp.src([
         config.srcServer + '**/*.ts',
         config.typings,
         ])
-        .pipe(ts(tsprj))
+        .pipe($.typescript(tsprjServer))
         .js.pipe(gulp.dest(config.distServer));
 });
 
 gulp.task('scripts-client',  () => {
-    const tsprj = ts.createProject(config.tsconfig);
-
     return gulp.src([
         config.srcClient + '**/*.ts',
         config.typings,
         ])
-        .pipe(ts(tsprj))
+        .pipe($.typescript(tsprjClient))
         .js.pipe(gulp.dest(config.distClient));
 });
 
@@ -142,8 +139,8 @@ function startBrowserSync(isDev) {
 }
 
 function watch(){
-    gulp.watch([config.srcClient + "**/*.ts"], ['scripts-client']);
-    gulp.watch([config.srcServer + "**/*.ts"], ['scripts-server']);
+    gulp.watch([config.srcClient + '**/*.ts'], ['scripts-client']);
+    gulp.watch([config.srcServer + '**/*.ts'], ['scripts-server']);
     
     $.watch([
         config.src + '**/*',
