@@ -25,6 +25,7 @@
     "gulp-nodemon": "^2.1.0",
     "gulp-plumber": "^1.1.0",
     "gulp-task-listing": "^1.0.1",
+    "gulp-typescript": "^2.13.6",
     "gulp-util": "^3.0.7",
     "lodash": "^4.13.1",
     "node-notifier": "^4.6.0",

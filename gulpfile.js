@@ -17,23 +17,51 @@ gulp.task('help', $.taskListing);
 gulp.task('default', ['serve-dev']);
 
 gulp.task('clean', () => {
-    let delConfig = [].concat(config.build, config.temp);
+    let delConfig = [].concat(config.dist, config.temp);
     log('Cleaning: ' + $.util.colors.blue(delConfig));
     return del(delConfig);
 });
 
-gulp.task('serve-dev', () => {
+gulp.task("scripts-server",  () => {
+    const ts = $.typescript;
+    const tsprj = ts.createProject(config.tsconfig);
+    
+    return gulp.src([
+        config.srcServer + '**/*.ts',
+        config.typings,
+        ])
+        .pipe(ts(tsprj))
+        .js.pipe(gulp.dest(config.distServer));
+});
+
+gulp.task("scripts-client",  () => {
+    const ts = $.typescript;
+    const tsprj = ts.createProject(config.tsconfig);
+
+    return gulp.src([
+        config.srcClient + '**/*.ts',
+        config.typings,
+        ])
+        .pipe(ts(tsprj))
+        .js.pipe(gulp.dest(config.distClient));
+});
+
+gulp.task('dist', ['scripts-server', 'scripts-client'],  () => {
+    return gulp.src([
+        config.src + '**/*',
+        '!' + config.src + '**/*.ts'
+        ])
+        .pipe(gulp.dest(config.dist));
+});
+
+gulp.task('serve-dev', ['dist'], () => {
     serve(true /*isDev*/);
 });
 
-gulp.task('serve-build', ['build'], () => {
+gulp.task('serve-dist', ['dist'], () => {
     serve(false /*isDev*/);
 });
 
-gulp.task('build', ['clean'],  () => {
-	return gulp.src([config.source + '**/*'])
-			.pipe(gulp.dest(config.build));
-});
 
 //=====================================
 
@@ -72,9 +100,9 @@ function getNodeOptions(isDev) {
         delayTime: 1,
         env: {
             'PORT': port,
-            'NODE_ENV': isDev ? 'dev' : 'build'
+            'NODE_ENV': isDev ? 'dev' : 'dist'
         },
-        watch: [config.server]
+        watch: [config.distServer]
     };
 }
 
@@ -85,12 +113,15 @@ function startBrowserSync(isDev) {
 
     log('Starting BrowserSync on port ' + port);
 
+    gulp.watch([config.srcClient + "**/*.ts"], ['scripts-client']);
+    gulp.watch([config.srcServer + "**/*.ts"], ['scripts-server']);
+
 	let options = {
         proxy: 'localhost:' + port,
         port: config.browserSyncPort,
-        files: isDev ? [
-            config.client + '**/*.*'
-        ] : [],
+        files: [
+            config.distClient + '**/*.*'
+        ],
         ghostMode: {
             clicks: true,
             location: false,
