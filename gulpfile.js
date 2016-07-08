@@ -5,16 +5,18 @@ const args = require('yargs').argv;
 const $ = require('gulp-load-plugins')({lazy: true});
 const config = require('./gulp.config')();
 const browserSync = require('browser-sync');
+const runSequence = require('run-sequence');
 const del = require('del');
 const path = require('path');
 const _ = require('lodash');
+const ts = $.typescript;
 const port = process.env.PORT || config.defaultPort;
 
 /**
  * List the available gulp tasks
  */
 gulp.task('help', $.taskListing);
-gulp.task('default', ['serve-dev']);
+gulp.task('default', ['node-dev']);
 
 gulp.task('clean', () => {
     let delConfig = [].concat(config.dist, config.temp);
@@ -22,8 +24,20 @@ gulp.task('clean', () => {
     return del(delConfig);
 });
 
-gulp.task("scripts-server",  () => {
-    const ts = $.typescript;
+gulp.task('build',  (cb) => {
+    runSequence('clean', 
+        ['files-copy', 'scripts-server', 'scripts-client'], cb);
+});
+
+gulp.task('files-copy', () => {
+    return gulp.src([
+        config.src + '**/*',
+        '!' + config.src + '**/*.ts'
+        ])
+        .pipe(gulp.dest(config.dist));
+});
+
+gulp.task('scripts-server',  () => {
     const tsprj = ts.createProject(config.tsconfig);
     
     return gulp.src([
@@ -34,8 +48,7 @@ gulp.task("scripts-server",  () => {
         .js.pipe(gulp.dest(config.distServer));
 });
 
-gulp.task("scripts-client",  () => {
-    const ts = $.typescript;
+gulp.task('scripts-client',  () => {
     const tsprj = ts.createProject(config.tsconfig);
 
     return gulp.src([
@@ -46,22 +59,13 @@ gulp.task("scripts-client",  () => {
         .js.pipe(gulp.dest(config.distClient));
 });
 
-gulp.task('dist', ['scripts-server', 'scripts-client'],  () => {
-    return gulp.src([
-        config.src + '**/*',
-        '!' + config.src + '**/*.ts'
-        ])
-        .pipe(gulp.dest(config.dist));
-});
-
-gulp.task('serve-dev', ['dist'], () => {
+gulp.task('node-dev', ['build'], () => {
     serve(true /*isDev*/);
 });
 
-gulp.task('serve-dist', ['dist'], () => {
+gulp.task('node-dist', ['build'], () => {
     serve(false /*isDev*/);
 });
-
 
 //=====================================
 
@@ -113,8 +117,7 @@ function startBrowserSync(isDev) {
 
     log('Starting BrowserSync on port ' + port);
 
-    gulp.watch([config.srcClient + "**/*.ts"], ['scripts-client']);
-    gulp.watch([config.srcServer + "**/*.ts"], ['scripts-server']);
+    watch();
 
 	let options = {
         proxy: 'localhost:' + port,
@@ -136,6 +139,21 @@ function startBrowserSync(isDev) {
     };
 
     browserSync(options);
+}
+
+function watch(){
+    gulp.watch([config.srcClient + "**/*.ts"], ['scripts-client']);
+    gulp.watch([config.srcServer + "**/*.ts"], ['scripts-server']);
+    
+    $.watch([
+        config.src + '**/*',
+        '!' + config.src + '**/*.ts'
+     ], {
+        base: config.src, 
+        verbose: true,
+        ignoreInitial: true
+    })
+    .pipe(gulp.dest(config.dist));
 }
 
 /**

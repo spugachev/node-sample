@@ -4,4 +4,4 @@ function hello(compiler: string) {
 
 hello("TypeScript!!!12345");
 
-document.write('<h1>TypeScript!!!56</h1>');
+document.write('<h1>TypeScript!!!5678901</h1>');

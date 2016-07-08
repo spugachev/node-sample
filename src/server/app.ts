@@ -11,7 +11,7 @@ app.get('/', function (req, res) {
   res.send(`<html><head>
   	<link rel="stylesheet" href="css/site.css"/>
   	<script src="app.js"></script>
-  	</head><body>Hello World!!! 12345ZZZzzzz!!! ;) ##$ Sergey Pugachev</body></html>`);
+  	</head><body>Hello World!!! 12345ZZZzzzz****!!! ;) ##$ Sergey Pugachev</body></html>`);
 });
 
 app.listen(port, function () {
