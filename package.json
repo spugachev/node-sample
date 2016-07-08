@@ -20,10 +20,14 @@
     "browser-sync": "^2.13.0",
     "del": "^2.2.1",
     "gulp": "^3.9.1",
+    "gulp-imagemin": "^3.0.1",
     "gulp-load-plugins": "^1.2.4",
     "gulp-nodemon": "^2.1.0",
+    "gulp-plumber": "^1.1.0",
     "gulp-task-listing": "^1.0.1",
     "gulp-util": "^3.0.7",
+    "lodash": "^4.13.1",
+    "node-notifier": "^4.6.0",
     "yargs": "^4.7.1"
   },
   "dependencies": {

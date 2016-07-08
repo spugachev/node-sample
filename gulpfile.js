@@ -1,18 +1,26 @@
 'use strict';
 
-let gulp = require('gulp');
-let args = require('yargs').argv;
-let $ = require('gulp-load-plugins')({lazy: true});
-let config = require('./gulp.config')();
-let browserSync = require('browser-sync');
-let del = require('del');
-let port = process.env.PORT || config.defaultPort;
+const gulp = require('gulp');
+const args = require('yargs').argv;
+const $ = require('gulp-load-plugins')({lazy: true});
+const config = require('./gulp.config')();
+const browserSync = require('browser-sync');
+const del = require('del');
+const path = require('path');
+const _ = require('lodash');
+const port = process.env.PORT || config.defaultPort;
 
 /**
  * List the available gulp tasks
  */
 gulp.task('help', $.taskListing);
-gulp.task('default', ['help']);
+gulp.task('default', ['serve-dev']);
+
+gulp.task('clean', () => {
+    let delConfig = [].concat(config.build, config.temp);
+    log('Cleaning: ' + $.util.colors.blue(delConfig));
+    return del(delConfig);
+});
 
 gulp.task('serve-dev', () => {
     serve(true /*isDev*/);
@@ -22,8 +30,9 @@ gulp.task('serve-build', ['build'], () => {
     serve(false /*isDev*/);
 });
 
-gulp.task('build', () => {
-
+gulp.task('build', ['clean'],  () => {
+	return gulp.src([config.source + '**/*'])
+			.pipe(gulp.dest(config.build));
 });
 
 //=====================================
@@ -79,7 +88,10 @@ function startBrowserSync(isDev) {
 	let options = {
         proxy: 'localhost:' + port,
         port: config.browserSyncPort,
-        ghostMode: { // these are the defaults t,f,t,t
+        files: isDev ? [
+            config.client + '**/*.*'
+        ] : [],
+        ghostMode: {
             clicks: true,
             location: false,
             forms: true,
@@ -109,4 +121,19 @@ function log(msg) {
     } else {
         $.util.log($.util.colors.blue(msg));
     }
+}
+
+/**
+ * Show OS level notification using node-notifier
+ */
+function notify(options) {
+    var notifier = require('node-notifier');
+    var notifyOptions = {
+        sound: 'Bottle',
+        contentImage: path.join(__dirname, 'gulp.png'),
+        icon: path.join(__dirname, 'gulp.png')
+    };
+
+    _.assign(notifyOptions, options);
+    notifier.notify(notifyOptions);
 }
